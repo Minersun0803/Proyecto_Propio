@@ -1,0 +1,44 @@
+import yt_dlp
+import os
+import subprocess
+
+"""
+Descargar Listas de reproducción de YouTube con yt-dlp.
+"""
+
+# Actualizar yt-dlp antes de iniciar
+subprocess.run(["python", "-m", "pip", "install", "-U", "yt-dlp"])
+
+# Solicitar el nombre de la lista y crear la carpeta de descarga
+nombre = input("Ingrese el nombre de la lista: ")
+ruta_descarga = f'C:\\Users\\Eduardo Corrales\\Desktop\\YT\\{nombre}'
+os.makedirs(ruta_descarga, exist_ok=True)
+
+# Cambiar al directorio de descarga
+os.chdir(ruta_descarga)
+
+# Solicitar la URL de la lista de reproducción
+url = input("Ingrese la URL de la lista de reproducción: ")
+
+# Configuración personalizada de yt-dlp
+ydl_opts = {
+    'outtmpl': f'{ruta_descarga}/%(playlist_index)03d - %(title)s.%(ext)s',
+    'noplaylist': False,
+    'playlist_items': '1-',  # Descargar todos los videos
+    'format': 'bestvideo+bestaudio/best',  # Puedes cambiar a bestvideo+bestaudio/best si quieres más calidad
+    'merge_output_format': 'mp4'
+}
+
+try:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+    print(f'\n La lista de reproducción ha sido descargada correctamente en:\n{ruta_descarga}')
+except Exception as e:
+    print(f'\n Ocurrió un error durante la descarga:\n{str(e)}')
+
+  
+
+
+
+
+

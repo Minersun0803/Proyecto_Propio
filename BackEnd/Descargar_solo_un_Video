@@ -1,0 +1,42 @@
+import yt_dlp
+import ffmpeg
+import os
+
+# Ingresa la URL del video que deseas descargar
+url = 'https://www.youtube.com/watch?v=LMm8mZKTw0Q&list=PLRLzOBOhDV6g'
+
+# Especificar la ruta de descarga
+ruta_descarga = 'C:\\Users\\Eduardo Corrales\\Desktop\\Descargar Videos de YT\\Videos'
+ruta_descargamp3 = 'C:\\Users\\Eduardo Corrales\\Desktop\\Descargar Videos de YT\\Audios o Musica mp3'
+
+# Configuración de yt-dlp
+ydl_opts = {
+    'outtmpl': f'{ruta_descarga}/%(title)s.%(ext)s',
+}
+
+def convertir_a_mp3(ruta_video, ruta_audio):
+    nombre_archivo = os.path.splitext(os.path.basename(ruta_video))[0]
+    ruta_mp3 = os.path.join(ruta_audio, nombre_archivo + '.mp3')
+    stream = ffmpeg.input(ruta_video)
+    stream = ffmpeg.output(stream, ruta_mp3)
+    ffmpeg.run(stream)
+    print(f'El audio ha sido convertido y guardado en: {ruta_mp3}')
+
+try:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+        print('El video ha sido descargado correctamente en: ' + ruta_descarga)
+    
+    # Preguntar si se desea convertir a MP3
+    respuesta = input('¿Deseas convertir el video a MP3? (s/n): ')
+    if respuesta.lower() == 's':
+        archivos_descargados = os.listdir(ruta_descarga)
+        for archivo in archivos_descargados:
+            if archivo.endswith('.mp4') or archivo.endswith('.webm'): #Hay que correguier esto, para que solo se ponga en .mp4 o que la persona seleciones como quiere el archivo de video
+                ruta_video = os.path.join(ruta_descarga, archivo)
+                convertir_a_mp3(ruta_video, ruta_descargamp3)
+    else:
+        print('El video no se ha convertido a MP3.')
+except Exception as e:
+    print('El video no ha podido descargarse correctamente en: ' + ruta_descarga)
+    print(f'Error: {str(e)}')
